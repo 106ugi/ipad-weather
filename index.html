@@ -2,59 +2,591 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="현관날씨">
-<title>현관 날씨</title>
+<title>현관 날씨 V2</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}body{background:#eef3f6;color:#101318}#app{height:100%;padding:16px 18px;display:flex;flex-direction:column;transition:.4s}#app.morning{background:#f7f0e5}#app.day{background:#edf5f8}#app.evening{background:#232b37;color:#fff}#app.night{background:#11161d;color:#f5f7f8}.top{display:flex;justify-content:space-between;align-items:flex-start}.date{font-size:18px;font-weight:750;opacity:.7}.clock{font-size:34px;font-weight:850;letter-spacing:-1px;text-align:right}.place{font-size:12px;opacity:.55;text-align:right;margin-top:3px}.hero{display:flex;gap:10px;margin-top:10px;min-height:124px}.card{background:rgba(255,255,255,.70);border-radius:22px;padding:14px 16px}.evening .card,.night .card{background:rgba(255,255,255,.075)}.now{width:42%;display:flex;align-items:center}.ico{font-size:50px;margin-right:10px}.temp{font-size:44px;font-weight:850;line-height:1}.muted{font-size:13px;opacity:.62;margin-top:5px}.summary{flex:1;display:flex;flex-direction:column;justify-content:center}.summary h2{font-size:15px;margin:0 0 5px;opacity:.58}.summary .main{font-size:25px;font-weight:850;line-height:1.2}.summary .sub{font-size:13px;opacity:.62;margin-top:6px}.advice{display:flex;gap:9px;margin-top:10px}.advice .card{flex:1;min-width:0}.tag{font-size:13px;opacity:.55;font-weight:750}.big{font-size:18px;font-weight:850;margin-top:3px;line-height:1.2}.detail{font-size:11px;opacity:.6;line-height:1.35;margin-top:5px}.timeline{flex:1;margin-top:10px;min-height:120px}.timeline-head{display:flex;justify-content:space-between;font-size:12px;font-weight:750;opacity:.58}.hours{display:flex;justify-content:space-between;align-items:flex-end;height:78px;margin-top:7px}.hour{width:15%;text-align:center}.ht{font-size:10px;opacity:.55}.hi{font-size:21px;margin:3px 0}.hv{font-size:12px;font-weight:750}.hr{font-size:10px;opacity:.65;margin-top:2px}.bottom{font-size:10px;opacity:.48;display:flex;justify-content:space-between;padding:8px 2px 0}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#51a66d;margin-right:5px}.dot.stale{background:#d99a32}.dot.error{background:#cc5454}#gear{position:absolute;right:8px;top:7px;border:0;background:transparent;font-size:20px;opacity:.12}#settings,#loc{display:none;position:absolute;z-index:10}#settings.show,#loc.show{display:block}#settings{inset:0;background:rgba(17,22,29,.95);color:#fff;padding:24px;overflow:auto}#settings h2{margin:0 0 16px}#settings label{display:block;font-size:12px;opacity:.75;margin:11px 0 4px}#settings input{width:100%;height:40px;border:0;border-radius:10px;padding:0 10px;font-size:15px}.row{display:flex;gap:8px}.row>div{flex:1}.buttons{display:flex;gap:8px;margin-top:18px}.buttons button{flex:1;height:42px;border:0;border-radius:10px;font-weight:800}.save{background:#fff;color:#111}.secondary{background:#3c4654;color:#fff}#loc{left:16px;right:16px;bottom:18px;background:#101923;color:#fff;padding:15px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.25)}#loc b{font-size:17px}#loc p{font-size:12px;opacity:.7;line-height:1.4}#loc button{width:100%;height:40px;border:0;border-radius:10px;font-weight:800}.hint{font-size:11px;opacity:.55;line-height:1.5;margin-top:14px}@media(orientation:portrait){.hero{min-height:155px}.now{width:47%}.advice{flex-wrap:wrap}.advice .card{flex:1 1 46%}.timeline{min-height:190px}.hours{height:auto;flex-wrap:wrap}.hour{width:31%;margin:6px 0}}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:#dbe6ef;color:#101722}
+button,input,textarea{font:inherit}
+#app{position:relative;width:100%;height:100%;overflow:hidden;transition:background .6s,color .6s}
+#scene{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.scene-gradient{position:absolute;inset:0;background:linear-gradient(180deg,#8cc7f2 0%,#dcecf7 52%,#eef2f3 100%);transition:.6s}
+.night .scene-gradient{background:linear-gradient(180deg,#081120 0%,#152338 55%,#202a35 100%)}
+.rainy .scene-gradient{background:linear-gradient(180deg,#506273 0%,#8194a3 48%,#c5ced3 100%)}
+.snowy .scene-gradient{background:linear-gradient(180deg,#8fa8bb 0%,#dce6ec 58%,#eef2f4 100%)}
+.foggy .scene-gradient{background:linear-gradient(180deg,#9da9b0 0%,#c9d1d4 62%,#e3e6e7 100%)}
+
+.sun{position:absolute;width:120px;height:120px;border-radius:50%;right:8%;top:7%;background:#fff7c2;box-shadow:0 0 50px rgba(255,244,173,.65);animation:sunPulse 4s ease-in-out infinite}
+@keyframes sunPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.night .sun,.rainy .sun,.snowy .sun,.foggy .sun{display:none}
+
+.cloud{position:absolute;width:150px;height:48px;background:rgba(255,255,255,.74);border-radius:30px;filter:blur(.2px);animation:cloudMove 28s linear infinite}
+.cloud:before,.cloud:after{content:"";position:absolute;background:inherit;border-radius:50%}
+.cloud:before{width:70px;height:70px;left:28px;bottom:10px}
+.cloud:after{width:88px;height:88px;right:18px;bottom:5px}
+.cloud.c1{top:14%;left:-170px}
+.cloud.c2{top:25%;left:-260px;transform:scale(.72);opacity:.55;animation-duration:38s;animation-delay:-10s}
+.rainy .cloud,.snowy .cloud{background:rgba(53,67,80,.72)}
+@keyframes cloudMove{0%{margin-left:0}100%{margin-left:calc(100vw + 320px)}}
+
+.star{display:none;position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.8;animation:twinkle 2.5s ease-in-out infinite}
+.night .star{display:block}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+.moon{display:none;position:absolute;right:9%;top:8%;width:88px;height:88px;border-radius:50%;background:#f7f2d4;box-shadow:0 0 28px rgba(246,240,210,.32)}
+.night .moon{display:block}
+.moon:after{content:"";position:absolute;left:23px;top:-7px;width:82px;height:82px;border-radius:50%;background:#0b1526}
+
+.rain-layer,.snow-layer,.fog-layer,.lightning{display:none;position:absolute;inset:0}
+.rainy .rain-layer{display:block}
+.snowy .snow-layer{display:block}
+.foggy .fog-layer{display:block}
+.thunder .lightning{display:block}
+.drop{position:absolute;top:-12%;width:2px;height:23px;background:rgba(255,255,255,.48);transform:rotate(12deg);animation:rainFall .72s linear infinite}
+@keyframes rainFall{to{transform:translate(-35px,115vh) rotate(12deg)}}
+.flake{position:absolute;top:-10%;font-size:18px;color:#fff;opacity:.82;animation:snowFall 7s linear infinite}
+@keyframes snowFall{to{transform:translate(35px,115vh) rotate(240deg)}}
+.fogband{position:absolute;left:-20%;width:140%;height:80px;border-radius:50%;background:rgba(255,255,255,.24);filter:blur(18px);animation:fogMove 9s ease-in-out infinite alternate}
+@keyframes fogMove{from{transform:translateX(-4%)}to{transform:translateX(5%)}}
+.lightning{background:rgba(255,255,255,0);animation:flash 7s infinite}
+@keyframes flash{0%,86%,89%,93%,100%{background:rgba(255,255,255,0)}87%,91%{background:rgba(255,255,255,.45)}}
+
+.shell{position:relative;z-index:2;height:100%;padding:18px;display:flex;flex-direction:column}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start}
+.date{font-size:17px;font-weight:760;opacity:.72}
+.clock{font-size:36px;line-height:1;font-weight:900;letter-spacing:-1.5px;text-align:right}
+.place{font-size:12px;text-align:right;opacity:.58;margin-top:5px}
+#gear{position:absolute;right:17px;top:72px;width:34px;height:34px;border:0;border-radius:50%;background:rgba(255,255,255,.35);font-size:16px;z-index:6}
+
+.hero{display:flex;align-items:flex-end;justify-content:space-between;margin-top:15px;min-height:122px}
+.hero-left{display:flex;align-items:flex-end;gap:12px}
+.hero-icon{font-size:62px;line-height:.9}
+.temp{font-size:72px;line-height:.85;font-weight:920;letter-spacing:-4px}
+.condition{font-size:17px;font-weight:800;margin-top:8px}
+.feels{font-size:12px;opacity:.66;margin-top:3px}
+.highlow{text-align:right;font-size:13px;font-weight:760;opacity:.7;margin-right:42px}
+
+.message{margin-top:12px;padding:16px 18px;border-radius:24px;background:rgba(255,255,255,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 10px 28px rgba(24,42,58,.08)}
+.night .message,.night .card{background:rgba(255,255,255,.09)}
+.message .eyebrow{font-size:12px;font-weight:800;opacity:.54;margin-bottom:4px}
+.message .main{font-size:27px;font-weight:920;line-height:1.18;letter-spacing:-1px}
+.message .sub{font-size:13px;opacity:.68;margin-top:6px;line-height:1.45}
+
+.grid{display:flex;gap:10px;margin-top:10px;min-height:200px}
+.card{background:rgba(255,255,255,.68);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:22px;padding:14px 15px;box-shadow:0 9px 24px rgba(24,42,58,.07)}
+.outfit{width:44%;display:flex;gap:10px;align-items:center}
+.character{width:42%;height:160px;display:flex;align-items:flex-end;justify-content:center}
+.character svg{width:100%;height:100%;overflow:visible}
+.outfit-text{width:58%}
+.tag{font-size:12px;font-weight:800;opacity:.55}
+.big{font-size:20px;font-weight:900;line-height:1.2;margin-top:5px}
+.detail{font-size:11px;opacity:.66;line-height:1.4;margin-top:6px}
+.side{flex:1;display:flex;flex-direction:column;gap:10px}
+.side-row{display:flex;gap:10px;flex:1}
+.mini{flex:1;min-width:0}
+.mini .big{font-size:17px}
+.status-pill{display:inline-block;margin-top:7px;padding:5px 8px;border-radius:999px;background:rgba(0,0,0,.07);font-size:11px;font-weight:800}
+.night .status-pill{background:rgba(255,255,255,.1)}
+
+.timeline{margin-top:10px;padding:12px 14px;border-radius:21px;background:rgba(255,255,255,.58);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.night .timeline{background:rgba(255,255,255,.07)}
+.timeline-title{display:flex;justify-content:space-between;font-size:11px;font-weight:800;opacity:.56}
+.hours{display:flex;justify-content:space-between;margin-top:9px}
+.hour{width:16%;text-align:center}
+.ht{font-size:10px;opacity:.6}.hi{font-size:20px;margin:3px 0}.hv{font-size:12px;font-weight:850}.hp{font-size:9px;opacity:.63;margin-top:2px}
+
+.footer{display:flex;justify-content:space-between;margin-top:auto;padding-top:8px;font-size:10px;opacity:.48}
+
+#settings,#loc{display:none;position:absolute;z-index:20;background:#fff;color:#111;border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.28)}
+#settings{right:16px;top:16px;width:360px;max-width:calc(100% - 32px);max-height:calc(100% - 32px);overflow:auto;padding:18px}
+#settings.show,#loc.show{display:block}
+#settings h2{margin:0 0 12px;font-size:20px}
+#settings label{display:block;font-size:11px;font-weight:800;margin:10px 0 4px;opacity:.62}
+#settings input,#settings textarea{width:100%;border:1px solid #d9dee3;border-radius:10px;padding:9px 10px;background:#f8fafb}
+#settings textarea{height:52px;resize:none}
+.row{display:flex;gap:8px}.row>div{flex:1}
+.buttons{display:flex;gap:8px;margin-top:14px}.buttons button{flex:1;border:0;border-radius:11px;padding:10px;font-weight:850}.save{background:#111;color:#fff}.secondary{background:#edf1f4}
+.hint{font-size:10px;opacity:.55;line-height:1.45;margin-top:12px}
+#loc{left:50%;top:50%;transform:translate(-50%,-50%);width:290px;padding:18px;text-align:center}
+#loc p{font-size:12px;opacity:.65;line-height:1.45}
+#loc button{width:100%;border:0;border-radius:11px;padding:11px;font-weight:850;background:#111;color:#fff}
+
+.holiday-badge{display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;font-size:10px;background:rgba(219,51,54,.12);color:#b61e2b;font-weight:900}
+.night .holiday-badge{color:#ff9097;background:rgba(255,95,102,.12)}
+
+@media(max-width:700px){
+  .shell{padding:14px}
+  .temp{font-size:62px}
+  .hero-icon{font-size:52px}
+  .message .main{font-size:24px}
+  .grid{min-height:190px}
+}
+@media(orientation:portrait){
+  .grid{flex-direction:column;min-height:0}
+  .outfit{width:100%;height:190px}
+  .character{height:170px;width:34%}
+  .outfit-text{width:66%}
+  .side{flex-direction:row}
+  .side-row{width:50%}
+  .timeline{margin-top:8px}
+  .hero{min-height:110px}
+}
 </style>
 </head>
 <body>
-<div id="app" class="morning">
-<button id="gear">⚙</button>
-<div class="top"><div class="date" id="date">날짜</div><div><div class="clock" id="clock">--:--</div><div class="place" id="place">우리 집</div></div></div>
-<div class="hero"><div class="card now"><div class="ico" id="wicon">…</div><div><div class="temp" id="temp">--°</div><div class="muted" id="feels">체감 --°</div></div></div><div class="card summary"><h2 id="sumtitle">오늘 나갈 준비</h2><div class="main" id="summain">날씨 확인 중</div><div class="sub" id="sumsub">잠시만 기다려줘.</div></div></div>
-<div class="advice">
-<div class="card"><div class="tag">☂️ 우산</div><div class="big" id="umbrella">확인 중</div><div class="detail" id="umbrellaD">강수 예보 확인 중</div></div>
-<div class="card"><div class="tag">🧥 옷차림</div><div class="big" id="coat">확인 중</div><div class="detail" id="coatD">체감온도 확인 중</div></div>
-<div class="card"><div class="tag">😷 대기질</div><div class="big" id="air">확인 중</div><div class="detail" id="airD">PM2.5 / PM10 예측</div></div>
-<div class="card"><div class="tag">☀️ 기타</div><div class="big" id="extra">확인 중</div><div class="detail" id="extraD">UV·바람·일교차</div></div>
+<div id="app">
+  <div id="scene">
+    <div class="scene-gradient"></div>
+    <div class="sun"></div>
+    <div class="moon"></div>
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="star" style="left:10%;top:10%"></div>
+    <div class="star" style="left:23%;top:18%;animation-delay:.7s"></div>
+    <div class="star" style="left:42%;top:11%;animation-delay:1.2s"></div>
+    <div class="star" style="left:62%;top:22%;animation-delay:.3s"></div>
+    <div class="star" style="left:79%;top:13%;animation-delay:1.7s"></div>
+    <div class="rain-layer" id="rainLayer"></div>
+    <div class="snow-layer" id="snowLayer"></div>
+    <div class="fog-layer">
+      <div class="fogband" style="top:20%"></div>
+      <div class="fogband" style="top:37%;animation-delay:-2s"></div>
+      <div class="fogband" style="top:54%;animation-delay:-4s"></div>
+    </div>
+    <div class="lightning"></div>
+  </div>
+
+  <div class="shell">
+    <button id="gear">⚙</button>
+    <div class="topbar">
+      <div class="date" id="date">날짜</div>
+      <div><div class="clock" id="clock">--:--</div><div class="place" id="place">우리 집</div></div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-left">
+        <div class="hero-icon" id="heroIcon">…</div>
+        <div>
+          <div class="temp" id="temp">--°</div>
+          <div class="condition" id="condition">날씨 확인 중</div>
+          <div class="feels" id="feels">체감 --°</div>
+        </div>
+      </div>
+      <div class="highlow" id="highlow">최고 --° / 최저 --°</div>
+    </div>
+
+    <div class="message">
+      <div class="eyebrow" id="modeTitle">오늘 나갈 준비</div>
+      <div class="main" id="mainMessage">날씨를 확인하고 있어요</div>
+      <div class="sub" id="subMessage">잠시만 기다려줘.</div>
+    </div>
+
+    <div class="grid">
+      <div class="card outfit">
+        <div class="character">
+          <svg viewBox="0 0 120 180" aria-label="오늘 옷차림 캐릭터">
+            <circle cx="60" cy="31" r="18" fill="#f2cfb0"/>
+            <path d="M43 23 Q60 4 78 23 Q73 13 60 12 Q48 13 43 23" fill="#24292e"/>
+            <circle cx="54" cy="30" r="1.5" fill="#222"/><circle cx="66" cy="30" r="1.5" fill="#222"/>
+            <path d="M55 38 Q60 41 65 38" stroke="#9b6658" fill="none" stroke-width="1.5"/>
+            <g id="shirt">
+              <path d="M38 60 Q60 49 82 60 L89 112 L31 112 Z" fill="#f3f4f5" stroke="#31363b" stroke-width="2"/>
+              <path d="M38 61 L23 78 L31 89 L43 76" fill="#f3f4f5" stroke="#31363b" stroke-width="2"/>
+              <path d="M82 61 L97 78 L89 89 L77 76" fill="#f3f4f5" stroke="#31363b" stroke-width="2"/>
+            </g>
+            <g id="jacket" style="display:none">
+              <path d="M37 57 Q60 49 83 57 L91 116 L29 116 Z" fill="#333a40" stroke="#15191c" stroke-width="2"/>
+              <path d="M38 60 L22 82 L31 92 L45 73" fill="#333a40" stroke="#15191c" stroke-width="2"/>
+              <path d="M82 60 L98 82 L89 92 L75 73" fill="#333a40" stroke="#15191c" stroke-width="2"/>
+              <path d="M60 55 L60 116" stroke="#d5d7da" stroke-width="2"/>
+            </g>
+            <g id="puffer" style="display:none">
+              <path d="M35 58 Q60 47 85 58 L94 119 L26 119 Z" fill="#22282e" stroke="#101316" stroke-width="2"/>
+              <path d="M34 64 L19 84 L30 95 L44 75" fill="#22282e" stroke="#101316" stroke-width="2"/>
+              <path d="M86 64 L101 84 L90 95 L76 75" fill="#22282e" stroke="#101316" stroke-width="2"/>
+              <path d="M29 77 H91 M27 94 H93" stroke="#596068" stroke-width="1.5"/>
+            </g>
+            <g id="scarf" style="display:none">
+              <rect x="48" y="48" width="24" height="9" rx="4" fill="#676f76"/>
+              <path d="M67 53 L76 83" stroke="#676f76" stroke-width="8"/>
+            </g>
+            <g id="mask" style="display:none">
+              <path d="M48 28 Q60 42 72 28 L70 38 Q60 45 50 38 Z" fill="#eef3f5" stroke="#9ca7ac" stroke-width="1"/>
+            </g>
+            <g id="helmet" style="display:none">
+              <path d="M40 25 Q43 6 60 5 Q78 7 81 25 Z" fill="#252b30"/>
+              <path d="M55 25 L83 26" stroke="#252b30" stroke-width="4"/>
+            </g>
+            <g id="umbrella" style="display:none">
+              <path d="M88 48 Q103 25 118 48 Z" fill="#31383e"/>
+              <path d="M103 48 V125 Q103 137 94 137" stroke="#31383e" stroke-width="3" fill="none"/>
+            </g>
+            <path d="M42 111 L45 162" stroke="#2b3035" stroke-width="13" stroke-linecap="round"/>
+            <path d="M78 111 L75 162" stroke="#2b3035" stroke-width="13" stroke-linecap="round"/>
+            <path d="M35 166 H50 M70 166 H85" stroke="#15191d" stroke-width="7" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="outfit-text">
+          <div class="tag">👕 오늘 뭐 입지?</div>
+          <div class="big" id="outfitName">확인 중</div>
+          <div class="detail" id="outfitDetail">출근·귀가 시간 체감온도로 추천해요.</div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="side-row">
+          <div class="card mini">
+            <div class="tag" id="commuteTag">🚲 출근 이동</div>
+            <div class="big" id="bikeStatus">확인 중</div>
+            <div class="detail" id="bikeDetail">09:30 날씨 확인 중</div>
+            <div class="status-pill" id="bikePill">--</div>
+          </div>
+          <div class="card mini">
+            <div class="tag">☂️ 우산</div>
+            <div class="big" id="umbrellaStatus">확인 중</div>
+            <div class="detail" id="umbrellaDetail">비·눈 시간 확인 중</div>
+          </div>
+        </div>
+        <div class="side-row">
+          <div class="card mini">
+            <div class="tag">🌙 저녁</div>
+            <div class="big" id="eveningStatus">확인 중</div>
+            <div class="detail" id="eveningDetail">19~22시 기준</div>
+          </div>
+          <div class="card mini">
+            <div class="tag">😷 대기질</div>
+            <div class="big" id="airStatus">확인 중</div>
+            <div class="detail" id="airDetail">PM2.5 / PM10</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-title"><span id="timelineTitle">앞으로 날씨</span><span id="holidayText"></span></div>
+      <div class="hours" id="hours"></div>
+    </div>
+
+    <div class="footer">
+      <span id="status">연결 중</span>
+      <span id="updated">업데이트 --:--</span>
+    </div>
+  </div>
+
+  <div id="loc">
+    <b>현관 위치를 한 번만 알려줘</b>
+    <p>좌표는 이 iPad 브라우저에 저장되고 날씨 조회에만 사용돼.</p>
+    <button id="locbtn">현재 위치 사용</button>
+  </div>
+
+  <div id="settings">
+    <h2>설정</h2>
+    <label>표시 이름</label><input id="sName">
+    <div class="row"><div><label>위도</label><input id="sLat"></div><div><label>경도</label><input id="sLon"></div></div>
+    <div class="row"><div><label>출발 시간</label><input id="sLeave" value="09:30"></div><div><label>퇴근 시작</label><input id="sReturn" value="19:00"></div></div>
+    <div class="row"><div><label>귀가 판단 종료</label><input id="sReturnEnd" value="22:00"></div><div><label>내일 준비 전환</label><input id="sTomorrow" value="21:00"></div></div>
+    <label>추가 쉬는 날 (자동 공휴일 외, 쉼표로 입력)</label>
+    <textarea id="sExtra" placeholder="예: 2026-12-31, 2027-01-02"></textarea>
+    <div class="buttons"><button class="secondary" id="reLoc">현재 위치 다시 잡기</button><button class="save" id="save">저장</button></div>
+    <div class="hint">한국 공휴일은 Nager.Date 공개 API에서 자동으로 받아 저장해요. 임시공휴일처럼 외부 데이터 반영이 늦을 수 있는 날은 ‘추가 쉬는 날’에 직접 넣을 수 있어요.</div>
+  </div>
 </div>
-<div class="card timeline"><div class="timeline-head"><span id="timelineTitle">앞으로 12시간</span><span id="highlow">최고 --° / 최저 --°</span></div><div class="hours" id="hours"></div></div>
-<div class="bottom"><div><span class="dot" id="dot"></span><span id="status">연결 중</span></div><div id="updated">업데이트 --:--</div></div>
-</div>
-<div id="loc"><b>현관 위치를 한 번만 알려줘</b><p>좌표는 이 iPad 안에만 저장되고 날씨 조회에만 사용해.</p><button id="locbtn">현재 위치 사용</button></div>
-<div id="settings"><h2>설정</h2><label>표시 이름</label><input id="sName"><div class="row"><div><label>위도</label><input id="sLat"></div><div><label>경도</label><input id="sLon"></div></div><div class="row"><div><label>우산 기준 강수확률(%)</label><input id="sRain" type="number"></div><div><label>겉옷 기준 체감온도(°C)</label><input id="sCoat" type="number"></div></div><div class="row"><div><label>아침 시작</label><input id="sMorning" type="number"></div><div><label>밤 시작</label><input id="sNight" type="number"></div></div><div class="buttons"><button class="secondary" id="reLoc">현재 위치 다시 잡기</button><button class="save" id="save">저장</button></div><div class="hint">미세먼지는 Open‑Meteo 예측모델 기반이어서 AirKorea 실측값과 다를 수 있어. 설정값은 이 iPad의 브라우저에만 저장돼.</div></div>
+
 <script>
 (function(){
-var E=function(id){return document.getElementById(id)}, app=E('app');
-var D={name:'우리 집',lat:null,lon:null,rain:45,coat:17,morning:6,night:22},cfg=load(),W=null,A=null;
-function load(){try{var x=JSON.parse(localStorage.getItem('entryDashCfg')||'null'),k,d={};for(k in D)d[k]=D[k];if(x)for(k in x)d[k]=x[k];return d}catch(e){return D}}
-function saveCfg(){try{localStorage.setItem('entryDashCfg',JSON.stringify(cfg))}catch(e){}}
-function pad(n){return n<10?'0'+n:''+n} function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':00'}
-function part(){var h=new Date().getHours();if(h<cfg.morning||h>=cfg.night)return'night';if(h<11)return'morning';if(h<17)return'day';return'evening'}
-function clock(){var d=new Date(),days=['일','월','화','수','목','금','토'];E('date').innerHTML=(d.getMonth()+1)+'월 '+d.getDate()+'일 '+days[d.getDay()]+'요일';E('clock').innerHTML=pad(d.getHours())+':'+pad(d.getMinutes());theme()}
-function theme(){var p=part();app.className=p;E('sumtitle').innerHTML=p==='morning'?'오늘 나갈 준비':p==='day'?'남은 오늘':p==='evening'?'오늘 밤 · 내일 아침':'내일 준비'}
-function xhr(url,cb){var x=new XMLHttpRequest();x.open('GET',url,true);x.timeout=12000;x.onreadystatechange=function(){if(x.readyState===4){if(x.status>=200&&x.status<300){try{cb(null,JSON.parse(x.responseText))}catch(e){cb(e)}}else cb(new Error('HTTP '+x.status))}};x.onerror=function(){cb(new Error('network'))};x.ontimeout=function(){cb(new Error('timeout'))};x.send()}
-function cache(k,d){try{localStorage.setItem(k,JSON.stringify(d))}catch(e){}} function cached(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
-function status(t,c){E('status').innerHTML=t;E('dot').className='dot'+(c?' '+c:'')}
-function locate(){if(!navigator.geolocation){openSettings();return}E('loc').className='';status('위치 확인 중','');navigator.geolocation.getCurrentPosition(function(p){cfg.lat=Number(p.coords.latitude.toFixed(4));cfg.lon=Number(p.coords.longitude.toFixed(4));saveCfg();fill();refresh()},function(){status('위치 설정 필요','error');openSettings()},{enableHighAccuracy:false,timeout:10000,maximumAge:86400000})}
-function refresh(){if(cfg.lat===null||cfg.lon===null||isNaN(Number(cfg.lat))||isNaN(Number(cfg.lon))){E('loc').className='show';status('위치 설정 필요','error');return}E('place').innerHTML=cfg.name||'우리 집';status('업데이트 중','');var b='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(cfg.lat)+'&longitude='+encodeURIComponent(cfg.lon),wu=b+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,apparent_temperature,precipitation_probability,rain,showers,snowfall,weather_code,wind_speed_10m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,rain_sum,showers_sum,snowfall_sum,uv_index_max,sunrise,sunset&timezone=auto&forecast_days=3',au='https://air-quality-api.open-meteo.com/v1/air-quality?latitude='+encodeURIComponent(cfg.lat)+'&longitude='+encodeURIComponent(cfg.lon)+'&current=pm10,pm2_5&hourly=pm10,pm2_5&timezone=auto&forecast_days=2',gw=false,ga=false,ew=false,ea=false;xhr(wu,function(e,d){ew=!!e;W=e?cached('wcache'):d;if(d)cache('wcache',d);gw=true;done()});xhr(au,function(e,d){ea=!!e;A=e?cached('acache'):d;if(d)cache('acache',d);ga=true;done()});function done(){if(!gw||!ga)return;if(W){render();status(ew||ea?'저장 데이터 표시 중':'정상',ew||ea?'stale':'')}else status('날씨 연결 실패','error')}}
-function wi(c){if(c===0)return'☀️';if(c<=2)return'🌤️';if(c===3)return'☁️';if(c===45||c===48)return'🌫️';if(c>=51&&c<=67)return'🌧️';if(c>=71&&c<=77)return'🌨️';if(c>=80&&c<=82)return'🌧️';if(c>=85&&c<=86)return'🌨️';if(c>=95)return'⛈️';return'🌥️'}
-function wn(c){if(c===0)return'맑음';if(c<=2)return'구름 조금';if(c===3)return'흐림';if(c===45||c===48)return'안개';if(c>=51&&c<=67)return'비';if(c>=71&&c<=77)return'눈';if(c>=80&&c<=82)return'소나기';if(c>=85&&c<=86)return'눈 소나기';if(c>=95)return'천둥번개';return'날씨 변화'}
-function r(v){return Math.round(Number(v))} function vmax(a){var m=-9999,i;for(i=0;i<a.length;i++)if(Number(a[i])>m)m=Number(a[i]);return m} function vmin(a){var m=9999,i;for(i=0;i<a.length;i++)if(Number(a[i])<m)m=Number(a[i]);return m} function vsum(a){var s=0,i;for(i=0;i<a.length;i++)s+=Number(a[i]||0);return s}
-function idx(){var t=W.hourly.time,key=dateKey(new Date()),i,b=0,bd=1e18,n=Date.now();for(i=0;i<t.length;i++)if(t[i]===key)return i;for(i=0;i<t.length;i++){var z=Date.parse(t[i]),d=Math.abs(z-n);if(!isNaN(z)&&d<bd){b=i;bd=d}}return b} function hc(){var p=part();return p==='night'?14:p==='evening'?16:12} function sl(k,i,n){return W.hourly[k]?W.hourly[k].slice(i,i+n):[]}
-function render(){theme();var c=W.current||{},i=idx(),n=hc(),pop=sl('precipitation_probability',i,n),rain=sl('rain',i,n),show=sl('showers',i,n),snow=sl('snowfall',i,n),feel=sl('apparent_temperature',i,n),temps=sl('temperature_2m',i,n),winds=sl('wind_speed_10m',i,n),uvs=sl('uv_index',i,n),p=part(),d=W.daily||{};E('wicon').innerHTML=wi(Number(c.weather_code));E('temp').innerHTML=r(c.temperature_2m)+'°';E('feels').innerHTML='체감 '+r(c.apparent_temperature)+'° · 습도 '+r(c.relative_humidity_2m)+'%';var hi=d.temperature_2m_max?r(d.temperature_2m_max[0]):'--',lo=d.temperature_2m_min?r(d.temperature_2m_min[0]):'--';E('highlow').innerHTML='최고 '+hi+'° / 최저 '+lo+'°';if(p==='morning'){E('summain').innerHTML=wn(Number(c.weather_code))+' · '+hi+'° / '+lo+'°';E('sumsub').innerHTML='우산·옷·대기질을 먼저 확인해.';E('timelineTitle').innerHTML='앞으로 12시간'}else if(p==='day'){E('summain').innerHTML='지금 '+wn(Number(c.weather_code))+' · 체감 '+r(c.apparent_temperature)+'°';E('sumsub').innerHTML='남은 오늘의 비·바람·UV 기준';E('timelineTitle').innerHTML='남은 시간'}else{var th=d.temperature_2m_max&&d.temperature_2m_max[1]!=null?r(d.temperature_2m_max[1]):'--',tl=d.temperature_2m_min&&d.temperature_2m_min[1]!=null?r(d.temperature_2m_min[1]):'--';E('summain').innerHTML='내일 '+wn(Number(d.weather_code&&d.weather_code[1]))+' · '+th+'° / '+tl+'°';E('sumsub').innerHTML='내일 아침 준비를 우선해서 보여줘.';E('timelineTitle').innerHTML=p==='night'?'밤 ~ 내일 오전':'오늘 밤 ~ 내일 아침'}umbrella(pop,rain,show,snow,i);coat(feel,temps);air();extra(uvs,winds,temps);hours(i,n);var z=new Date();E('updated').innerHTML='업데이트 '+pad(z.getHours())+':'+pad(z.getMinutes())}
-function umbrella(pop,rain,show,snow,i){var mp=vmax(pop.length?pop:[0]),tr=vsum(rain)+vsum(show),sn=vsum(snow),thr=Number(cfg.rain)||45,win='',t=W.hourly.time,j,s=-1,e=-1;for(j=i;j<Math.min(t.length,i+hc());j++){if(Number(W.hourly.precipitation_probability[j]||0)>=Math.max(30,thr-10)){if(s<0)s=j;e=j}else if(s>=0)break}if(s>=0)win=t[s].substr(11,2)+'시'+(e>s?'~'+t[e].substr(11,2)+'시':'');if(sn>=.1){E('umbrella').innerHTML='눈 대비해';E('umbrellaD').innerHTML=(win?win+' ':'')+'눈 가능성 · 미끄럼 주의'}else if(mp>=thr||tr>=.3){E('umbrella').innerHTML='우산 챙겨';E('umbrellaD').innerHTML=(win?win+' ':'')+'강수확률 최대 '+r(mp)+'%'}else if(mp>=30){E('umbrella').innerHTML='접이식 우산 고민';E('umbrellaD').innerHTML='강수확률 최대 '+r(mp)+'%'}else{E('umbrella').innerHTML='우산은 없어도 될 듯';E('umbrellaD').innerHTML='강수확률 최대 '+r(mp)+'%'}}
-function coat(feel,temps){var mn=vmin(feel.length?feel:[W.current.apparent_temperature]),sw=vmax(temps.length?temps:[0])-vmin(temps.length?temps:[0]),m=mn<=5?'두꺼운 외투 챙겨':mn<=10?'도톰한 외투 추천':mn<=15?'자켓·바람막이 추천':mn<Number(cfg.coat||17)?'얇은 겉옷 챙겨':mn<=22?'얇은 겉옷은 선택':'겉옷 없어도 무난';E('coat').innerHTML=m;E('coatD').innerHTML='최저 체감 '+r(mn)+'°'+(sw>=9?' · 일교차 '+r(sw)+'°':'')}
-function air(){if(!A||!A.current){E('air').innerHTML='데이터 없음';return}var p25=Number(A.current.pm2_5),p10=Number(A.current.pm10),g25=p25<=15?0:p25<=35?1:p25<=75?2:3,g10=p10<=30?0:p10<=80?1:p10<=150?2:3,g=Math.max(g25,g10),names=['좋음','보통','나쁨','매우 나쁨'];E('air').innerHTML=g>=2?'마스크 고려 · '+names[g]:names[g];E('airD').innerHTML='PM2.5 '+r(p25)+' / PM10 '+r(p10)+' ㎍/㎥ · 예측'}
-function extra(uvs,winds,temps){var uv=vmax(uvs.length?uvs:[0]),wind=vmax(winds.length?winds:[0]),sw=vmax(temps.length?temps:[0])-vmin(temps.length?temps:[0]),m='무난',d=[];if(uv>=8){m='자외선 매우 강함';d.push('UV '+uv.toFixed(1))}else if(uv>=6){m='자외선 강함';d.push('UV '+uv.toFixed(1))}if(wind>=10){m='바람 강해';d.push('최대 '+r(wind)+' km/h')}else if(wind>=7)d.push('바람 '+r(wind)+' km/h');if(sw>=10)d.push('일교차 '+r(sw)+'°');if(!d.length)d.push('특별한 주의사항 없음');E('extra').innerHTML=m;E('extraD').innerHTML=d.join(' · ')}
-function hours(i,n){E('hours').innerHTML='';var st=Math.max(1,Math.floor(n/6)),made=0,j;for(j=i;j<Math.min(W.hourly.time.length,i+n)&&made<6;j+=st){var d=document.createElement('div'),tm=W.hourly.time[j].substr(11,2)+'시',po=r(W.hourly.precipitation_probability[j]||0);d.className='hour';d.innerHTML='<div class="ht">'+tm+'</div><div class="hi">'+wi(Number(W.hourly.weather_code[j]))+'</div><div class="hv">'+r(W.hourly.temperature_2m[j])+'°</div><div class="hr">'+(po>=20?'☂ '+po+'%':'&nbsp;')+'</div>';E('hours').appendChild(d);made++}}
-function fill(){E('sName').value=cfg.name;E('sLat').value=cfg.lat==null?'':cfg.lat;E('sLon').value=cfg.lon==null?'':cfg.lon;E('sRain').value=cfg.rain;E('sCoat').value=cfg.coat;E('sMorning').value=cfg.morning;E('sNight').value=cfg.night}function openSettings(){fill();E('settings').className='show'}function closeSettings(){E('settings').className=''}
-E('gear').onclick=openSettings;E('locbtn').onclick=locate;E('reLoc').onclick=function(){closeSettings();locate()};E('save').onclick=function(){cfg.name=E('sName').value||'우리 집';cfg.lat=parseFloat(E('sLat').value);cfg.lon=parseFloat(E('sLon').value);cfg.rain=parseInt(E('sRain').value,10)||45;cfg.coat=parseInt(E('sCoat').value,10)||17;cfg.morning=parseInt(E('sMorning').value,10);cfg.night=parseInt(E('sNight').value,10);saveCfg();closeSettings();refresh()};
-function drift(){var n=Math.floor(Date.now()/600000)%4,x=[0,2,0,-2][n],y=[0,0,2,0][n];app.style.transform='translate('+x+'px,'+y+'px)'}clock();drift();setInterval(clock,10000);setInterval(drift,60000);setInterval(refresh,15*60*1000);if(cfg.lat==null||cfg.lon==null)E('loc').className='show';else refresh();
+var E=function(id){return document.getElementById(id)};
+var app=E('app'), W=null, A=null, HOL={};
+var D={name:'우리 집',lat:null,lon:null,leave:'09:30',ret:'19:00',retEnd:'22:00',tomorrow:'21:00',extra:''};
+var cfg=loadCfg();
+
+function loadCfg(){try{var x=JSON.parse(localStorage.getItem('entryDashV2')||'null'),d={},k;for(k in D)d[k]=D[k];if(x)for(k in x)d[k]=x[k];return d}catch(e){return D}}
+function saveCfg(){try{localStorage.setItem('entryDashV2',JSON.stringify(cfg))}catch(e){}}
+function pad(n){return n<10?'0'+n:''+n}
+function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function hhmm(d){return pad(d.getHours())+':'+pad(d.getMinutes())}
+function cloneDate(d){return new Date(d.getTime())}
+function addDays(d,n){var x=cloneDate(d);x.setDate(x.getDate()+n);return x}
+function mins(t){var p=(t||'00:00').split(':');return (parseInt(p[0],10)||0)*60+(parseInt(p[1],10)||0)}
+function round(n){return Math.round(Number(n)||0)}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+function maxArr(a){var m=-9999,i;for(i=0;i<a.length;i++)m=Math.max(m,Number(a[i])||0);return m===-9999?0:m}
+function minArr(a){var m=9999,i;for(i=0;i<a.length;i++)m=Math.min(m,Number(a[i])||0);return m===9999?0:m}
+function sumArr(a){var s=0,i;for(i=0;i<a.length;i++)s+=Number(a[i])||0;return s}
+function xhr(url,cb){var x=new XMLHttpRequest();x.open('GET',url,true);x.timeout=13000;x.onreadystatechange=function(){if(x.readyState===4){if(x.status>=200&&x.status<300){try{cb(null,JSON.parse(x.responseText))}catch(e){cb(e)}}else cb(new Error('HTTP '+x.status))}};x.onerror=function(){cb(new Error('network'))};x.ontimeout=function(){cb(new Error('timeout'))};x.send()}
+function cache(k,v){try{localStorage.setItem(k,JSON.stringify({saved:Date.now(),data:v}))}catch(e){}}
+function cached(k,maxAge){try{var o=JSON.parse(localStorage.getItem(k)||'null');if(!o)return null;if(maxAge&&Date.now()-o.saved>maxAge)return null;return o.data}catch(e){return null}}
+
+function clock(){
+  var d=new Date(),days=['일','월','화','수','목','금','토'];
+  E('date').innerHTML=(d.getMonth()+1)+'월 '+d.getDate()+'일 '+days[d.getDay()]+'요일'+holidayBadge(d);
+  E('clock').innerHTML=hhmm(d);
+}
+function holidayBadge(d){
+  var k=ymd(d),h=HOL[k],week=(d.getDay()===0||d.getDay()===6);
+  if(h)return '<span class="holiday-badge">'+h+'</span>';
+  if(week)return '<span class="holiday-badge">주말</span>';
+  return '';
+}
+function extraHolidaySet(){
+  var o={},a=(cfg.extra||'').split(','),i,k;
+  for(i=0;i<a.length;i++){k=a[i].replace(/^\s+|\s+$/g,'');if(/^\d{4}-\d{2}-\d{2}$/.test(k))o[k]='추가 휴일'}
+  return o
+}
+function isHoliday(d){var ex=extraHolidaySet();return !!HOL[ymd(d)]||!!ex[ymd(d)]}
+function isWorkday(d){var day=d.getDay();return day>=1&&day<=5&&!isHoliday(d)}
+function tomorrowWorkday(){return isWorkday(addDays(new Date(),1))}
+
+function loadHolidays(done){
+  var now=new Date(),years=[now.getFullYear(),now.getFullYear()+1],pending=years.length,all={},i;
+  function finish(){pending--;if(pending<=0){HOL=all;done&&done()}}
+  for(i=0;i<years.length;i++)(function(y){
+    var ck='krHolidays_'+y,local=cached(ck,1000*60*60*24*14);
+    if(local){mergeH(local);finish();return}
+    xhr('https://date.nager.at/api/v3/PublicHolidays/'+y+'/KR',function(err,data){
+      if(!err&&data&&data.length){cache(ck,data);mergeH(data)}
+      else{
+        var stale=cached(ck,0);if(stale)mergeH(stale)
+      }
+      finish();
+    });
+  })(years[i]);
+  function mergeH(data){
+    var j,h;
+    for(j=0;j<data.length;j++){
+      h=data[j];
+      if(h&&h.date&&(h.global!==false))all[h.date]=h.localName||h.name||'공휴일';
+    }
+  }
+}
+
+function locate(){
+  if(!navigator.geolocation){openSettings();return}
+  E('loc').className='';
+  E('status').innerHTML='위치 확인 중';
+  navigator.geolocation.getCurrentPosition(function(p){
+    cfg.lat=Number(p.coords.latitude.toFixed(4));cfg.lon=Number(p.coords.longitude.toFixed(4));saveCfg();fillSettings();refresh();
+  },function(){E('status').innerHTML='위치 설정 필요';openSettings()},{enableHighAccuracy:false,timeout:10000,maximumAge:86400000});
+}
+
+function refresh(){
+  if(cfg.lat===null||cfg.lon===null||isNaN(Number(cfg.lat))||isNaN(Number(cfg.lon))){E('loc').className='show';return}
+  E('place').innerHTML=cfg.name||'우리 집';
+  E('status').innerHTML='업데이트 중';
+  var base='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(cfg.lat)+'&longitude='+encodeURIComponent(cfg.lon);
+  var weather=base+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,apparent_temperature,precipitation_probability,rain,showers,snowfall,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,snowfall_sum&timezone=auto&forecast_days=7';
+  var air='https://air-quality-api.open-meteo.com/v1/air-quality?latitude='+encodeURIComponent(cfg.lat)+'&longitude='+encodeURIComponent(cfg.lon)+'&current=pm10,pm2_5&timezone=auto&forecast_days=2';
+  var aDone=false,wDone=false,wErr=false,aErr=false;
+  xhr(weather,function(e,d){wErr=!!e;W=e?cached('weatherV2',0):d;if(d)cache('weatherV2',d);wDone=true;done()});
+  xhr(air,function(e,d){aErr=!!e;A=e?cached('airV2',0):d;if(d)cache('airV2',d);aDone=true;done()});
+  function done(){
+    if(!aDone||!wDone)return;
+    if(W){render();E('status').innerHTML=(wErr||aErr)?'저장 데이터 표시 중':'정상'}
+    else E('status').innerHTML='날씨 연결 실패';
+  }
+}
+
+function weatherName(c){
+  c=Number(c);
+  if(c===0)return'맑음'; if(c<=2)return'구름 조금'; if(c===3)return'흐림';
+  if(c===45||c===48)return'안개'; if(c>=51&&c<=67)return'비'; if(c>=71&&c<=77)return'눈';
+  if(c>=80&&c<=82)return'소나기'; if(c>=85&&c<=86)return'눈'; if(c>=95)return'천둥번개'; return'흐림';
+}
+function weatherIcon(c,isDay){
+  c=Number(c); if(c===0)return isDay?'☀️':'🌙'; if(c<=2)return isDay?'🌤️':'☁️'; if(c===3)return'☁️';
+  if(c===45||c===48)return'🌫️'; if(c>=51&&c<=67)return'🌧️'; if(c>=71&&c<=77)return'🌨️';
+  if(c>=80&&c<=82)return'🌧️'; if(c>=85&&c<=86)return'🌨️'; if(c>=95)return'⛈️'; return'☁️';
+}
+function scene(c,isDay){
+  app.className='';
+  if(!isDay)app.className+=' night';
+  c=Number(c);
+  if((c>=51&&c<=67)||(c>=80&&c<=82))app.className+=' rainy';
+  if((c>=71&&c<=77)||(c>=85&&c<=86))app.className+=' snowy';
+  if(c===45||c===48)app.className+=' foggy';
+  if(c>=95)app.className+=' rainy thunder';
+}
+function buildParticles(){
+  var i,d,rl=E('rainLayer'),sl=E('snowLayer');rl.innerHTML='';sl.innerHTML='';
+  for(i=0;i<34;i++){d=document.createElement('i');d.className='drop';d.style.left=((i*37)%100)+'%';d.style.animationDelay=(-(i%9)*.11)+'s';d.style.animationDuration=(.55+(i%5)*.08)+'s';rl.appendChild(d)}
+  for(i=0;i<22;i++){d=document.createElement('i');d.className='flake';d.innerHTML='❄';d.style.left=((i*43)%100)+'%';d.style.animationDelay=(-(i%8)*.72)+'s';d.style.animationDuration=(5+(i%5))+'s';sl.appendChild(d)}
+}
+
+function findIndex(date,hour){
+  var target=ymd(date)+'T'+pad(hour)+':00',t=W.hourly.time,i,b=-1,best=999999;
+  for(i=0;i<t.length;i++){var diff=Math.abs(new Date(t[i]).getTime()-new Date(target).getTime());if(diff<best){best=diff;b=i}}
+  return b;
+}
+function rangeFor(date,startH,endH){
+  var out={temp:[],feel:[],pop:[],rain:[],snow:[],wind:[],code:[]},i,s=findIndex(date,startH),e=findIndex(date,endH),k;
+  if(s<0||e<0)return out;if(e<s){k=s;s=e;e=k}
+  for(i=s;i<=e;i++){out.temp.push(W.hourly.temperature_2m[i]);out.feel.push(W.hourly.apparent_temperature[i]);out.pop.push(W.hourly.precipitation_probability[i]);out.rain.push((W.hourly.rain[i]||0)+(W.hourly.showers[i]||0));out.snow.push(W.hourly.snowfall[i]||0);out.wind.push(W.hourly.wind_speed_10m[i]||0);out.code.push(W.hourly.weather_code[i])}
+  return out;
+}
+function commuteFor(date){
+  var leaveH=parseInt(cfg.leave.split(':')[0],10)||9;
+  var retH=parseInt(cfg.ret.split(':')[0],10)||19;
+  var retEndH=parseInt(cfg.retEnd.split(':')[0],10)||22;
+  var dep=rangeFor(date,leaveH,Math.min(23,leaveH+1)),ret=rangeFor(date,retH,retEndH);
+  return {dep:dep,ret:ret};
+}
+function freezeRisk(date){
+  var leaveH=parseInt(cfg.leave.split(':')[0],10)||9, idx=findIndex(date,leaveH),start=Math.max(0,idx-12),i,minT=999,wet=0,snow=0;
+  if(idx<0)return false;
+  for(i=start;i<=idx;i++){minT=Math.min(minT,Number(W.hourly.temperature_2m[i])||0);wet+=(Number(W.hourly.rain[i])||0)+(Number(W.hourly.showers[i])||0);snow+=Number(W.hourly.snowfall[i])||0}
+  return (minT<=1.5&&(wet>=.2||snow>0));
+}
+function bikeAdvice(date,dep){
+  var pop=maxArr(dep.pop),rain=sumArr(dep.rain),snow=sumArr(dep.snow),wind=maxArr(dep.wind),codes=dep.code,thunder=false,i;
+  for(i=0;i<codes.length;i++)if(Number(codes[i])>=95)thunder=true;
+  if(snow>0||freezeRisk(date))return {level:'위험',main:'대중교통 추천',detail:snow>0?'출근 시간 눈 예보 · 노면 미끄럼 주의':'비/눈 뒤 기온 낮음 · 결빙 가능성'};
+  if(thunder||rain>=1.2||pop>=75||wind>=38)return {level:'비추천',main:'대중교통 고려',detail:thunder?'번개 가능성 있음':wind>=38?'강풍으로 자전거 주의':'비 확률 높음 · 젖은 노면 주의'};
+  if(rain>=.2||pop>=45||wind>=27)return {level:'주의',main:'자전거 주의',detail:wind>=27?'바람 강한 편':'약한 비 가능성 · 노면 확인'};
+  return {level:'양호',main:'자전거 무난',detail:'출근 시간 비·눈 위험 낮음'};
+}
+
+function outfitAdvice(dep,ret){
+  var allFeel=dep.feel.concat(ret.feel),mn=minArr(allFeel),depFeel=dep.feel.length?minArr(dep.feel):mn,retFeel=ret.feel.length?minArr(ret.feel):mn;
+  var wind=maxArr(dep.wind.concat(ret.wind)),rain=maxArr(dep.pop.concat(ret.pop)),name='',mode='';
+  if(mn>=23){name='반팔';mode='shirt'}
+  else if(mn>=20){name='반팔 + 얇은 겉옷';mode='jacket'}
+  else if(mn>=17){name='긴팔 또는 얇은 자켓';mode='jacket'}
+  else if(mn>=13){name='맨투맨 + 얇은 점퍼';mode='jacket'}
+  else if(mn>=9){name='니트·맨투맨 + 점퍼';mode='jacket'}
+  else if(mn>=5){name='두꺼운 점퍼 / 경량패딩';mode='puffer'}
+  else{name='패딩';mode='puffer'}
+  if(wind>=30&&mn<20&&mode==='shirt'){name='바람막이 챙기기';mode='jacket'}
+  var detail='출근 체감 '+round(depFeel)+'° → 귀가 최저 '+round(retFeel)+'°';
+  if(depFeel-retFeel>=7)detail+=' · 저녁 기온 뚝';
+  return {name:name,mode:mode,detail:detail,umbrella:rain>=45,scarf:mn<=4};
+}
+function setCharacter(out,bike,airBad){
+  E('shirt').style.display='none';E('jacket').style.display='none';E('puffer').style.display='none';
+  E(out.mode).style.display='';
+  E('umbrella').style.display=out.umbrella?'':'none';
+  E('scarf').style.display=out.scarf?'':'none';
+  E('mask').style.display=airBad?'':'none';
+  E('helmet').style.display=(bike.level==='양호'||bike.level==='주의')?'':'none';
+}
+
+function umbrellaAdvice(dep,ret){
+  var p=maxArr(dep.pop.concat(ret.pop)),r=sumArr(dep.rain.concat(ret.rain)),s=sumArr(dep.snow.concat(ret.snow));
+  if(s>0)return {main:'눈 대비',detail:'출퇴근 시간 눈 가능성 · 미끄럼 주의'};
+  if(p>=55||r>=.4)return {main:'우산 챙기기',detail:'출퇴근 중 강수확률 최대 '+round(p)+'%'};
+  if(p>=35)return {main:'접이식 고민',detail:'강수확률 최대 '+round(p)+'%'};
+  return {main:'우산 없어도 될 듯',detail:'강수확률 최대 '+round(p)+'%'};
+}
+function airAdvice(){
+  if(!A||!A.current)return {main:'데이터 없음',detail:'',bad:false};
+  var p25=Number(A.current.pm2_5),p10=Number(A.current.pm10),g25=p25<=15?0:p25<=35?1:p25<=75?2:3,g10=p10<=30?0:p10<=80?1:p10<=150?2:3,g=Math.max(g25,g10),names=['좋음','보통','나쁨','매우 나쁨'];
+  return {main:g>=2?'마스크 고려':'대기질 '+names[g],detail:'PM2.5 '+round(p25)+' · PM10 '+round(p10),bad:g>=2};
+}
+function eveningAdvice(ret){
+  var feel=minArr(ret.feel),pop=maxArr(ret.pop),snow=sumArr(ret.snow);
+  if(snow>0)return {main:'저녁 눈 주의',detail:'19~22시 최저 체감 '+round(feel)+'°'};
+  if(pop>=50)return {main:'퇴근길 비 가능',detail:'19~22시 강수확률 최대 '+round(pop)+'%'};
+  if(feel<=10)return {main:'퇴근길 쌀쌀',detail:'19~22시 최저 체감 '+round(feel)+'°'};
+  return {main:'저녁 무난',detail:'19~22시 최저 체감 '+round(feel)+'°'};
+}
+
+function messageFor(date,commute,bike,out,umb,isTomorrow){
+  var depFeel=minArr(commute.dep.feel),retFeel=minArr(commute.ret.feel),diff=depFeel-retFeel;
+  if(bike.level==='위험')return {main:isTomorrow?'내일 출근길 노면 조심':'오늘 출근길 노면 조심',sub:bike.detail+' · '+bike.main};
+  if(umb.main==='우산 챙기기'&&maxArr(commute.ret.pop)>maxArr(commute.dep.pop)+15)return {main:'출근길은 괜찮지만 퇴근 때 비 와요',sub:'우산 챙겨서 나가기 · 귀가 시간 강수확률 '+round(maxArr(commute.ret.pop))+'%'};
+  if(umb.main==='우산 챙기기')return {main:'오늘은 우산 챙겨 나가요',sub:umb.detail};
+  if(diff>=8)return {main:'낮만 보고 입으면 저녁에 추워요',sub:out.name+' · 출근 체감 '+round(depFeel)+'° → 귀가 '+round(retFeel)+'°'};
+  if(diff>=5)return {main:'낮엔 괜찮지만 퇴근길엔 쌀쌀해요',sub:out.name+' 챙기기'};
+  return {main:out.name+' 정도면 무난해요',sub:'출근·귀가 시간 모두 고려한 추천'};
+}
+
+function render(){
+  var now=new Date(),c=W.current||{},isDay=Number(c.is_day)!==0;
+  clock();scene(c.weather_code,isDay);
+  E('heroIcon').innerHTML=weatherIcon(c.weather_code,isDay);
+  E('temp').innerHTML=round(c.temperature_2m)+'°';
+  E('condition').innerHTML=weatherName(c.weather_code);
+  E('feels').innerHTML='체감 '+round(c.apparent_temperature)+'° · 습도 '+round(c.relative_humidity_2m)+'%';
+  E('highlow').innerHTML='최고 '+round(W.daily.temperature_2m_max[0])+'° / 최저 '+round(W.daily.temperature_2m_min[0])+'°';
+
+  var todayWork=isWorkday(now),tom=addDays(now,1),tomWork=isWorkday(tom),afterTomorrow=mins(hhmm(now))>=mins(cfg.tomorrow);
+  var target=now,isTomorrow=false,mode='';
+  if(afterTomorrow&&tomWork){target=tom;isTomorrow=true;mode='내일 출근 준비'}
+  else if(todayWork){mode=mins(hhmm(now))<600?'오늘 출근 준비':mins(hhmm(now))<1020?'오늘 남은 일정':'오늘 귀가 준비'}
+  else{
+    mode=isHoliday(now)?'오늘은 쉬는 날':'주말 모드';
+    if(afterTomorrow&&tomWork){target=tom;isTomorrow=true;mode='내일 출근 준비'}
+  }
+  E('modeTitle').innerHTML=mode;
+
+  var commute=commuteFor(target),bike=bikeAdvice(target,commute.dep),out=outfitAdvice(commute.dep,commute.ret),umb=umbrellaAdvice(commute.dep,commute.ret),air=airAdvice(),eve=eveningAdvice(commute.ret);
+  var msg;
+  if(!isWorkday(target)&&!isTomorrow){
+    msg=generalDayMessage(now);
+    E('commuteTag').innerHTML='🚶 오늘 외출';
+    bike={level:'휴일',main:'날씨 보고 가볍게',detail:'출퇴근 모드 대신 오늘 외출 기준'};
+  }else{
+    msg=messageFor(target,commute,bike,out,umb,isTomorrow);
+    E('commuteTag').innerHTML='🚲 '+(isTomorrow?'내일 출근 이동':'출근 이동');
+  }
+
+  E('mainMessage').innerHTML=msg.main;
+  E('subMessage').innerHTML=msg.sub;
+  E('outfitName').innerHTML=out.name;
+  E('outfitDetail').innerHTML=out.detail;
+  E('bikeStatus').innerHTML=bike.main;
+  E('bikeDetail').innerHTML=bike.detail;
+  E('bikePill').innerHTML=bike.level;
+  E('umbrellaStatus').innerHTML=umb.main;
+  E('umbrellaDetail').innerHTML=umb.detail;
+  E('eveningStatus').innerHTML=eve.main;
+  E('eveningDetail').innerHTML=eve.detail;
+  E('airStatus').innerHTML=air.main;
+  E('airDetail').innerHTML=air.detail;
+  setCharacter(out,bike,air.bad);
+
+  renderHours(target,isTomorrow);
+  var hk=HOL[ymd(target)]||(extraHolidaySet()[ymd(target)]||'');
+  E('holidayText').innerHTML=hk?hk:'';
+  var z=new Date();E('updated').innerHTML='업데이트 '+hhmm(z);
+}
+function generalDayMessage(date){
+  var idx=findIndex(date,new Date().getHours()),n=Math.min(W.hourly.time.length-1,idx+10),p=[],f=[],i;
+  for(i=idx;i<=n;i++){p.push(W.hourly.precipitation_probability[i]);f.push(W.hourly.apparent_temperature[i])}
+  var pop=maxArr(p),mn=minArr(f);
+  if(pop>=55)return {main:'오늘 외출엔 우산 챙겨요',sub:'앞으로 강수확률 최대 '+round(pop)+'%'};
+  if(mn<=10)return {main:'늦게 나가면 겉옷 챙겨요',sub:'앞으로 최저 체감 '+round(mn)+'°'};
+  return {main:'오늘은 가볍게 나가기 괜찮아요',sub:'비·추위 위험이 크지 않아요'};
+}
+function renderHours(target,isTomorrow){
+  var hours=[9,12,15,19,21,22],box=E('hours'),i,idx,code,temp,pop,html='';
+  if(!isWorkday(target)&&!isTomorrow){var h=new Date().getHours();hours=[h,clamp(h+2,0,23),clamp(h+4,0,23),clamp(h+6,0,23),clamp(h+8,0,23),clamp(h+10,0,23)]}
+  for(i=0;i<hours.length;i++){
+    idx=findIndex(target,hours[i]);if(idx<0)continue;
+    code=W.hourly.weather_code[idx];temp=W.hourly.temperature_2m[idx];pop=W.hourly.precipitation_probability[idx];
+    html+='<div class="hour"><div class="ht">'+pad(hours[i])+'시</div><div class="hi">'+weatherIcon(code,true)+'</div><div class="hv">'+round(temp)+'°</div><div class="hp">'+(Number(pop)>=30?round(pop)+'%':'&nbsp;')+'</div></div>';
+  }
+  box.innerHTML=html;
+  E('timelineTitle').innerHTML=isTomorrow?'내일 출근시간대':'시간별 날씨';
+}
+
+function fillSettings(){E('sName').value=cfg.name||'';E('sLat').value=cfg.lat==null?'':cfg.lat;E('sLon').value=cfg.lon==null?'':cfg.lon;E('sLeave').value=cfg.leave;E('sReturn').value=cfg.ret;E('sReturnEnd').value=cfg.retEnd;E('sTomorrow').value=cfg.tomorrow;E('sExtra').value=cfg.extra||''}
+function openSettings(){fillSettings();E('settings').className='show'}
+function closeSettings(){E('settings').className=''}
+E('gear').onclick=openSettings;
+E('locbtn').onclick=locate;
+E('reLoc').onclick=function(){closeSettings();locate()};
+E('save').onclick=function(){
+  cfg.name=E('sName').value||'우리 집';cfg.lat=parseFloat(E('sLat').value);cfg.lon=parseFloat(E('sLon').value);
+  cfg.leave=E('sLeave').value||'09:30';cfg.ret=E('sReturn').value||'19:00';cfg.retEnd=E('sReturnEnd').value||'22:00';cfg.tomorrow=E('sTomorrow').value||'21:00';cfg.extra=E('sExtra').value||'';
+  saveCfg();closeSettings();clock();refresh();
+};
+
+function drift(){var n=Math.floor(Date.now()/600000)%4,x=[0,2,0,-2][n],y=[0,0,2,0][n];document.querySelector('.shell').style.transform='translate('+x+'px,'+y+'px)'}
+buildParticles();clock();drift();
+setInterval(clock,10000);setInterval(drift,60000);setInterval(refresh,15*60*1000);
+loadHolidays(function(){clock();if(W)render()});
+if(cfg.lat==null||cfg.lon==null)E('loc').className='show';else refresh();
 })();
 </script>
 </body>
